@@ -4,9 +4,17 @@ from enum import Enum
 from pydantic import BaseModel
 import os
 from prompt import tone_guides,product_guides
-
-OPENROUTER_API_KEY=os.getenv("OPENROUTER_API_KEY")
+from fastapi.middleware.cors import CORSMiddleware
 app=FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
+OPENROUTER_API_KEY=os.getenv("OPENROUTER_API_KEY")
+
 client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
     api_key=OPENROUTER_API_KEY,
