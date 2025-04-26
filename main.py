@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 app=FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://your-fastapi-app.onrender.com/generate-copy"],
+    allow_origins=["https://shore-brand-copy.vercel.app/"],
     allow_credentials=True,
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
