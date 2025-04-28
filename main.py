@@ -1,13 +1,15 @@
 from openai import OpenAI
-from fastapi import FastAPI,HTTPException
+from fastapi import FastAPI, HTTPException
 from enum import Enum
 from pydantic import BaseModel
 import os
-from prompt import tone_guides,product_guides
+from prompt import tone_guides, product_guides
 from fastapi.responses import JSONResponse
 import json
 from fastapi.middleware.cors import CORSMiddleware
-app=FastAPI()
+
+app = FastAPI()
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,12 +17,14 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
-OPENROUTER_API_KEY=os.getenv("OPENROUTER_API_KEY")
+
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
 client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
     api_key=OPENROUTER_API_KEY,
 )
+
 class Tone(str, Enum):
     friendly = "Friendly"
     professional = "Professional"
@@ -43,26 +47,21 @@ class CopyRequest(BaseModel):
     brand_name: str
     product_type: ProductType
     product_description: str
-    content_type: str
     tone: Tone
 
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
+
 @app.get("/")
 def root():
     return {"message": "Your FastAPI backend is working! 🎉"}
 
 @app.post("/generate-copy")
-def generate_brand_copy(data:CopyRequest):
-    tone_instructions = tone_guides.get(data.tone, "")
-    product_instructions = product_guides.get(data.product_type, "")
-    prompt = f"""
-
-@app.post("/generate-copy")
 def generate_brand_copy(data: CopyRequest):
     tone_instructions = tone_guides.get(data.tone, "")
     product_instructions = product_guides.get(data.product_type, "")
+
     prompt = f"""
 You are an expert brand copywriter with a deep understanding of marketing psychology, emotional storytelling, and creative advertising.
 Your task is to generate brand copy assets for a brand called "{data.brand_name}" that sells products in the {data.product_type} category.
@@ -98,10 +97,10 @@ Only output the JSON. No explanations, no markdown formatting.
 """
     try:
         response = client.chat.completions.create(
-        model="mistralai/mistral-nemo:free",
-        messages=[{"role": "user", "content": prompt}]
+            model="mistralai/mistral-nemo:free",
+            messages=[{"role": "user", "content": prompt}]
         )
-        return {"result": response.choices[0].message.content.strip()}
+        content = response.choices[0].message.content.strip()
         json_output = json.loads(content)
 
         return JSONResponse(content=json_output)
